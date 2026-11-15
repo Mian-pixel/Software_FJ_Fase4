@@ -131,19 +131,72 @@ class Cliente(Entidad):
 
 # =====================================================
 # 5. CLASE ABSTRACTA SERVICIO
-# DESARROLLADO POR: 
+# DESARROLLADO POR: Oscar Fernando Hincapié Hernández
 # =====================================================
 
 
+lass Servicio(ABC):
+    """Clase abstracta base para servicios de Software FJ"""
+    def __init__(self, codigo, nombre, disponible=True):
+        self.codigo = codigo
+        self.nombre = nombre
+        self.disponible = disponible
 
+    @abstractmethod
+    def calcular_costo(self, duracion):
+        pass
+
+    @abstractmethod
+    def describir_servicio(self):
+        pass
+
+    # Sobrecarga simulada con parametros opcionales
+    def calcular_costo_con_impuesto(self, duracion, impuesto=0.19, descuento=0):
+        try:
+            costo = self.calcular_costo(duracion)
+            return costo * (1 + impuesto) * (1 - descuento)
+        except Exception as e:
+            raise ReservaInvalidaError(f"Error calculando costo con impuesto") from e
+
+    def validar_disponibilidad(self):
+        if not self.disponible:
+            raise ServicioNoDisponibleError(f"Servicio {self.codigo} no disponible")
+            
 
 # =====================================================
 # 6. SERVICIOS ESPECIALIZADOS
-# DESARROLLADO POR: 
+# DESARROLLADO POR: Oscar Fernando Hincapié Hernández
 # =====================================================
 
 
+class ReservaSala(Servicio):
+    def __init__(self, codigo, capacidad):
+        super().__init__(codigo, f"Sala capacidad {capacidad}")
+        self.capacidad = capacidad
+    def calcular_costo(self, duracion):
+        if duracion <=0: raise DatosInvalidosError("Duracion invalida")
+        return 50000 * duracion
+    def describir_servicio(self):
+        return f"[Sala] {self.codigo} - Capacidad: {self.capacidad}"
 
+class AlquilerEquipo(Servicio):
+    def __init__(self, codigo, tipo_equipo):
+        super().__init__(codigo, f"Equipo {tipo_equipo}")
+        self.tipo = tipo_equipo
+    def calcular_costo(self, duracion):
+        return 30000 * duracion
+    def describir_servicio(self):
+        return f"[Equipo] {self.codigo} - Tipo: {self.tipo}"
+
+class AsesoriaEspecializada(Servicio):
+    def __init__(self, codigo, especialidad):
+        super().__init__(codigo, f"Asesoria {especialidad}")
+        self.especialidad = especialidad
+    def calcular_costo(self, duracion):
+        return 80000 * duracion
+    def describir_servicio(self):
+        return f"[Asesoria] {self.codigo} - {self.especialidad}"
+        
 
 # =====================================================
 # 7. CLASE RESERVA
