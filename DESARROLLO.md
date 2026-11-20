@@ -7,7 +7,7 @@
 # GRUPO:213023_140
 # INTEGRANTES: 
 # -MIGUEL ANGEL CASTAÑEDA
-# -
+# -Oscar Fernando Hincapié Hernández
 # -
 # -
 # -
@@ -23,9 +23,36 @@ from abc import ABC, abstractmethod
 
 # =====================================================
 # 2. EXCEPCIONES PERSONALIZADAS
-# DESARROLLADO POR:
+# DESARROLLADO POR:MIGUEL ANGEL CASTAÑEDA
 # =====================================================
+class ErrorSistema(Exception):
+    """Excepción general del sistema Software FJ."""
+    pass
 
+
+class DatosInvalidosError(ErrorSistema):
+    """Se genera cuando los datos ingresados son incorrectos."""
+    pass
+
+
+class ClienteNoEncontradoError(ErrorSistema):
+    """Se genera cuando no se encuentra un cliente."""
+    pass
+
+
+class ServicioNoDisponibleError(ErrorSistema):
+    """Se genera cuando un servicio no está disponible."""
+    pass
+
+
+class ReservaInvalidaError(ErrorSistema):
+    """Se genera cuando una reserva no cumple las condiciones."""
+    pass
+
+
+class OperacionNoPermitidaError(ErrorSistema):
+    """Se genera cuando una operación no está permitida."""
+    pass
 
 
 # =====================================================
@@ -202,7 +229,102 @@ class AsesoriaEspecializada(Servicio):
 # 7. CLASE RESERVA
 # DESARROLLADO POR: 
 # =====================================================
+class Reserva:
+    """
+    Clase encargada de gestionar las reservas
+    de clientes y servicios de Software FJ.
 
+    Atributos:
+        codigo: Identificador de la reserva.
+        cliente: Cliente que realiza la reserva.
+        servicio: Servicio seleccionado.
+        duracion: Duración del servicio.
+        estado: Estado actual de la reserva.
+    """
+
+    def __init__(self, codigo, cliente, servicio, duracion):
+
+        # Validar el código de la reserva
+        if not isinstance(codigo, str) or not codigo.strip():
+            raise ReservaInvalidaError(
+                "El código de la reserva es obligatorio."
+            )
+
+        # Validar el cliente
+        if not isinstance(cliente, Cliente):
+            raise ClienteNoEncontradoError(
+                "El cliente ingresado no es válido."
+            )
+
+        # Validar la duración
+        if (isinstance(duracion, bool)
+                or not isinstance(duracion, (int, float))
+                or duracion <= 0):
+            raise ReservaInvalidaError(
+                "La duración debe ser mayor que cero."
+            )
+
+        # Validar que el servicio permita calcular costos
+        if not isinstance(servicio, Servicio):
+            raise ReservaInvalidaError(
+                "El servicio seleccionado no es válido."
+            )
+
+        # Asignación de atributos
+        self.codigo = codigo
+        self.cliente = cliente
+        self.servicio = servicio
+        self.duracion = duracion
+        self.estado = "Pendiente"
+
+        # Calcular el costo de la reserva
+        self.costo = servicio.calcular_costo(duracion)
+
+    def confirmar_reserva(self):
+        """
+        Confirma una reserva cuando el servicio
+        se encuentra disponible.
+        """
+
+        if self.estado != "Pendiente":
+            raise OperacionNoPermitidaError(
+                "Solo se pueden confirmar reservas pendientes."
+            )
+
+        self.servicio.validar_disponibilidad()
+
+        self.estado = "Confirmada"
+
+        print(f"Reserva {self.codigo} confirmada correctamente.")
+
+    def cancelar_reserva(self):
+        """
+        Cancela una reserva que no haya sido cancelada.
+        """
+
+        if self.estado == "Cancelada":
+            raise OperacionNoPermitidaError(
+                "La reserva ya se encuentra cancelada."
+            )
+
+        self.estado = "Cancelada"
+
+        print(f"Reserva {self.codigo} cancelada correctamente.")
+
+    def mostrar_reserva(self):
+        """
+        Muestra la información completa de la reserva.
+        """
+
+        return (
+            f"\n--- INFORMACIÓN DE LA RESERVA ---\n"
+            f"Código: {self.codigo}\n"
+            f"Cliente: {self.cliente.nombre}\n"
+            f"Servicio: {self.servicio.nombre}\n"
+            f"Duración: {self.duracion}\n"
+            f"Costo: ${self.costo:,.0f}\n"
+            f"Estado: {self.estado}"
+        )
 
 
 
