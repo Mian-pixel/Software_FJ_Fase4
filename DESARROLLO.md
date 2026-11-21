@@ -162,7 +162,7 @@ class Cliente(Entidad):
 # =====================================================
 
 
-lass Servicio(ABC):
+class Servicio(ABC):
     """Clase abstracta base para servicios de Software FJ"""
     def __init__(self, codigo, nombre, disponible=True):
         self.codigo = codigo
