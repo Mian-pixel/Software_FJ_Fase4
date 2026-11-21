@@ -335,3 +335,151 @@ class Reserva:
 
 
 # Prueba EJECUCION DEL SISTEMA
+
+# =====================================================
+# 8. FUNCIONES PRINCIPALES Y PRUEBAS
+# DESARROLLADO POR: Oscar Fernando Hincapié Hernández
+# =====================================================
+
+import datetime
+
+def registrar_log(mensaje):
+    """Guarda errores y eventos en el archivo de logs."""
+    try:
+        with open("errores.log", "a", encoding="utf-8") as archivo:
+            hora = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            archivo.write(f"[{hora}] {mensaje}\n")
+    except Exception as e:
+        print(f"No se pudo escribir en el log: {e}")
+
+def ejecutar_pruebas():
+    print("="*55)
+    print("  SOFTWARE FJ - PRUEBA DE EJECUCION DEL SISTEMA")
+    print("  FASE 4 - MANEJO DE EXCEPCIONES")
+    print("="*55)
+    registrar_log("Inicio de pruebas del sistema")
+
+    # 1. Cliente valido
+    try:
+        c1 = Cliente("123", "Fernando Hincapie", "fernando@gmail.com", "3001234567")
+        print("\n[1] OK Cliente valido creado:")
+        print(c1.mostrar_informacion())
+        registrar_log("Cliente valido creado: Fernando Hincapie")
+    except ErrorSistema as e:
+        print(f"\n[1] ERROR: {e}")
+        registrar_log(f"Error prueba 1: {e}")
+        c1 = None
+    else:
+        print("-> Prueba 1 superada sin errores.")
+    finally:
+        print("-> Fin prueba 1.")
+
+    # 2. Cliente invalido - correo sin @
+    try:
+        c_malo = Cliente("124", "Cliente Malo", "correo-sin-arroba", "3001234567")
+        print("\n[2] Cliente creado (no deberia pasar)")
+    except DatosInvalidosError as e:
+        print(f"\n[2] OK Error controlado - Cliente invalido: {e}")
+        registrar_log(f"Error controlado prueba 2: {e}")
+    except ErrorSistema as e:
+        print(f"\n[2] ERROR GENERAL: {e}")
+
+    # 3. Cliente invalido - telefono con letras
+    try:
+        c_malo2 = Cliente("125", "Otro Cliente", "otro@gmail.com", "300ABC")
+        print("\n[3] Cliente creado (no deberia pasar)")
+    except DatosInvalidosError as e:
+        print(f"\n[3] OK Error controlado - Telefono invalido: {e}")
+        registrar_log(f"Error controlado prueba 3: {e}")
+
+    # 4. Servicios validos + polimorfismo
+    try:
+        sala = ReservaSala("SALA-01", 20)
+        equipo = AlquilerEquipo("EQ-01", "Video Beam")
+        asesoria = AsesoriaEspecializada("ASE-01", "Programacion Python")
+        print(f"\n[4] OK Servicios creados:")
+        print(" ", sala.describir_servicio(), "- Costo 2h: $", sala.calcular_costo(2))
+        print(" ", equipo.describir_servicio(), "- Costo 3h: $", equipo.calcular_costo(3))
+        print(" ", asesoria.describir_servicio(), "- Costo 1h: $", asesoria.calcular_costo(1))
+        # Sobrecarga simulada: costo con impuesto y descuento
+        print("  Sala 2h con impuesto 19% y descuento 10%: $", f"{sala.calcular_costo_con_impuesto(2, 0.19, 0.10):,.0f}")
+        registrar_log("Servicios validos creados")
+    except ErrorSistema as e:
+        print(f"\n[4] ERROR: {e}")
+        registrar_log(f"Error prueba 4: {e}")
+
+    # 5. Reserva exitosa
+    try:
+        r1 = Reserva("R-001", c1, sala, 2)
+        print("\n[5] OK Reserva creada:", r1.mostrar_reserva())
+        r1.confirmar_reserva()
+        print("  Estado actual:", r1.estado)
+        registrar_log("Reserva R-001 confirmada")
+    except ErrorSistema as e:
+        print(f"\n[5] ERROR: {e}")
+        registrar_log(f"Error prueba 5: {e}")
+
+    # 6. Reserva invalida - duracion 0
+    try:
+        r_mala = Reserva("R-002", c1, sala, 0)
+        print("\n[6] Reserva creada (no deberia pasar)")
+    except ReservaInvalidaError as e:
+        print(f"\n[6] OK Error controlado - Duracion invalida: {e}")
+        registrar_log(f"Error controlado prueba 6: {e}")
+
+    # 7. Reserva invalida - cliente no es Cliente
+    try:
+        r_mala2 = Reserva("R-003", "Juan sin registrar", sala, 2)
+        print("\n[7] Reserva creada (no deberia pasar)")
+    except ClienteNoEncontradoError as e:
+        print(f"\n[7] OK Error controlado - Cliente no valido: {e}")
+        registrar_log(f"Error controlado prueba 7: {e}")
+
+    # 8. Servicio no disponible
+    try:
+        sala_ocupada = ReservaSala("SALA-02", 10)
+        sala_ocupada.disponible = False
+        r3 = Reserva("R-004", c1, sala_ocupada, 1)
+        r3.confirmar_reserva()
+        print("\n[8] Reserva confirmada (no deberia pasar)")
+    except ServicioNoDisponibleError as e:
+        print(f"\n[8] OK Error controlado - Servicio no disponible: {e}")
+        registrar_log(f"Error controlado prueba 8: {e}")
+    except ErrorSistema as e:
+        print(f"\n[8] ERROR: {e}")
+
+    # 9. Operacion no permitida - confirmar 2 veces
+    try:
+        r1.confirmar_reserva()
+        print("\n[9] Confirmada 2 veces (no deberia pasar)")
+    except OperacionNoPermitidaError as e:
+        print(f"\n[9] OK Error controlado - Confirmar 2 veces: {e}")
+        registrar_log(f"Error controlado prueba 9: {e}")
+
+    # 10. Cancelar reserva + encadenamiento de excepciones
+    try:
+        try:
+            costo = sala.calcular_costo_con_impuesto(-5)
+        except Exception as e:
+            raise ReservaInvalidaError("Fallo al calcular costo en prueba 10") from e
+    except ReservaInvalidaError as e:
+        print(f"\n[10] OK Error encadenado controlado: {e}")
+        print(f"     Causa original: {e.__cause__}")
+        registrar_log(f"Error encadenado prueba 10: {e} | Causa: {e.__cause__}")
+
+    try:
+        r1.cancelar_reserva()
+        print(f"\n[10b] OK Reserva R-001 cancelada. Estado: {r1.estado}")
+        r1.cancelar_reserva()
+    except OperacionNoPermitidaError as e:
+        print(f"[10b] OK Error controlado - Cancelar 2 veces: {e}")
+        registrar_log(f"Error controlado prueba 10b: {e}")
+
+    print("\n" + "="*55)
+    print("  FIN DE PRUEBAS - EL SISTEMA SIGUIO FUNCIONANDO")
+    print("  Revisa el archivo errores.log con todos los eventos")
+    print("="*55)
+    registrar_log("Fin de pruebas - sistema estable")
+
+if __name__ == "__main__":
+    ejecutar_pruebas()

@@ -1,0 +1,13 @@
+[2026-11-20 21:50:45] Inicio de pruebas del sistema
+[2026-11-20 21:50:45] Cliente valido creado: Fernando Hincapie
+[2026-11-20 21:50:45] Error controlado prueba 2: El correo electrónico no es válido.
+[2026-11-20 21:50:45] Error controlado prueba 3: El teléfono debe contener solamente números.
+[2026-11-20 21:50:45] Servicios validos creados
+[2026-11-20 21:50:45] Reserva R-001 confirmada
+[2026-11-20 21:50:45] Error controlado prueba 6: La duración debe ser mayor que cero.
+[2026-11-20 21:50:45] Error controlado prueba 7: El cliente ingresado no es válido.
+[2026-11-20 21:50:45] Error controlado prueba 8: Servicio SALA-02 no disponible
+[2026-11-20 21:50:45] Error controlado prueba 9: Solo se pueden confirmar reservas pendientes.
+[2026-11-20 21:50:45] Error encadenado prueba 10: Fallo al calcular costo en prueba 10 | Causa: Error calculando costo con impuesto
+[2026-11-20 21:50:45] Error controlado prueba 10b: La reserva ya se encuentra cancelada.
+[2026-11-20 21:50:45] Fin de pruebas - sistema estable
